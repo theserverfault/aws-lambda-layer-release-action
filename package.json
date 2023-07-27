@@ -1,0 +1,12 @@
+{
+  "name": "aws-lambda-layer-release",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.10.0",
+    "@actions/github": "^5.1.1",
+    "@aws-sdk/client-lambda": "^3.378.0",
+    "@aws-sdk/client-s3": "^3.378.0"
+  }
+}
