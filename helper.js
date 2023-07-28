@@ -144,10 +144,5 @@ exports.refreshLambdaLayerVersion = async ({
 		})));
 
 	const response = await Promise.all(commands);
-	if (errored(response)) {
-		console.log(JSON.stringify(response));
-		throw new Error("Error While Refreshing Lambda For Latest Layer. If you feel this is a bug, raise a ticket on the repo.");
-	}
-	console.log("Refreshing Lambda For Latest Layer.");
 	return response;
 }
