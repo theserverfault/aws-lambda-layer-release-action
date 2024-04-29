@@ -1,5 +1,5 @@
 const { readFileSync, statSync } = require('fs');
-const { LambdaClient, PublishLayerVersionCommand, UpdateFunctionConfigurationCommand } = require('@aws-sdk/client-lambda');
+const { LambdaClient, PublishLayerVersionCommand, UpdateFunctionConfigurationCommand, ListFunctionsCommand } = require('@aws-sdk/client-lambda');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 
 const non_error_response_codes = [200, 201, 204];
@@ -32,15 +32,15 @@ exports.getArchiveSize = archive => statSync(archive).size
  * @param {*} param0
  */
 exports.publishLambdaLayer = async ({
-	region,
-	accessKeyId,
-	secretAccessKey,
-	layerName,
-	archive,
-	architectures,
-	runtimes,
-	s3Bucket = null
-}) => {
+																			region,
+																			accessKeyId,
+																			secretAccessKey,
+																			layerName,
+																			archive,
+																			architectures,
+																			runtimes,
+																			s3Bucket = null
+																		}) => {
 	/**
 	 * Initiate the lambda client
 	 */
@@ -80,13 +80,13 @@ exports.publishLambdaLayer = async ({
  * @param {*} param0
  */
 exports.publishS3LayerArchive = async ({
-	region,
-	accessKeyId,
-	secretAccessKey,
-	s3Bucket,
-	layerName,
-	archive
-}) => {
+																				 region,
+																				 accessKeyId,
+																				 secretAccessKey,
+																				 s3Bucket,
+																				 layerName,
+																				 archive
+																			 }) => {
 	const client = s3Client({ region, accessKeyId, secretAccessKey });
 	const command = new PutObjectCommand({
 		Bucket: s3Bucket,
@@ -106,12 +106,12 @@ exports.publishS3LayerArchive = async ({
  * @param {*} param0
  */
 exports.deleteTemporaryArchiveFromS3 = async ({
-	region,
-	accessKeyId,
-	secretAccessKey,
-	s3Bucket,
-	s3Key
-}) => {
+																								region,
+																								accessKeyId,
+																								secretAccessKey,
+																								s3Bucket,
+																								s3Key
+																							}) => {
 	const client = s3Client({ region, accessKeyId, secretAccessKey });
 	const command = new DeleteObjectCommand({
 		Bucket: s3Bucket,
@@ -129,12 +129,12 @@ exports.deleteTemporaryArchiveFromS3 = async ({
  * Refresh lambda function to use the latest version of layer
  */
 exports.refreshLambdaLayerVersion = async ({
-	region,
-	accessKeyId,
-	secretAccessKey,
-	functionNames,
-	layerARN,
-}) => {
+																						 region,
+																						 accessKeyId,
+																						 secretAccessKey,
+																						 functionNames,
+																						 layerARN,
+																					 }) => {
 	const client = lambdaClient({ region, accessKeyId, secretAccessKey });
 	const commands = []
 	for (const functionName of functionNames)
@@ -142,7 +142,38 @@ exports.refreshLambdaLayerVersion = async ({
 			FunctionName: functionName,
 			Layers: [layerARN]
 		})));
-
+	
 	const response = await Promise.all(commands);
 	return response;
+}
+
+/**
+ * List all the lambda functions that use the specified layer
+ */
+exports.listLambdaFunctionsWithLayer = async ({
+																								region,
+																								accessKeyId,
+																								secretAccessKey,
+																								layerARN
+																							}) => {
+	try {
+		const client = lambdaClient({ region, accessKeyId, secretAccessKey });
+		
+		const allFunctions = [];
+		let nextMarker = null;
+		do {
+			const listFunctionsCommand = new ListFunctionsCommand({ Marker: nextMarker });
+			const { Functions: functions, NextMarker: nextPageMarker } = await client.send(listFunctionsCommand);
+			
+			allFunctions.push(...functions);
+			nextMarker = nextPageMarker;
+		} while (nextMarker);
+		
+		const matchinFunctions = allFunctions.filter((func) => func.Layers && func.Layers.some((layer) => layer.Arn === layerARN))
+		const functionNames = matchinFunctions.map((func) => func.FunctionName);
+		return functionNames;
+	} catch (error) {
+		console.error("Error:", error);
+		return [];
+	}
 }

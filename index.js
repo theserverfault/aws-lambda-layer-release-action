@@ -5,7 +5,8 @@ const {
 	publishS3LayerArchive,
 	getArchiveSize,
 	deleteTemporaryArchiveFromS3,
-	refreshLambdaLayerVersion
+	refreshLambdaLayerVersion,
+	listLambdaFunctionsWithLayer
 } = require('./helper');
 
 
@@ -20,10 +21,11 @@ const {
 		const architectures = getInput('architectures') ? JSON.parse(getInput('architectures')) : [];
 		const s3Bucket = getInput('s3_bucket');
 		const functionNames = JSON.parse(getInput('functions'));
-
+		const autoUpdate = getInput('auto_update') || false;
+		
 		console.log(runtimes, architectures);
 		const creds = { region, accessKeyId, secretAccessKey };
-
+		
 		const size = getArchiveSize(archive);
 		console.log(`Archive size is ${size}`);
 		let layerResponse;
@@ -72,6 +74,19 @@ const {
 			await refreshLambdaLayerVersion({
 				...creds,
 				functionNames,
+				layerARN: layerResponse.LayerVersionArn
+			});
+		}
+		if (autoUpdate) {
+			// find automatically all matching functions
+			const foundFunctionNames = await listLambdaFunctionsWithLayer({
+				...creds,
+				layerARN: layerResponse.LayerVersionArn,
+			})
+			// trigger functions update
+			await refreshLambdaLayerVersion({
+				...creds,
+				functionNames: foundFunctionNames,
 				layerARN: layerResponse.LayerVersionArn
 			});
 		}
