@@ -1,4 +1,4 @@
-name: 'AWS Lambda Layer Release'
+name: 'AWS Lambda Layer Release - ktx-mega'
 author: Gaurav Sharma <sharma02gaurav@gmail.com>
 description: 'Action lets you release your latest lambda layer version'
 inputs:
