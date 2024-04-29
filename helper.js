@@ -80,7 +80,7 @@ exports.publishLambdaLayer = async ({
  * @param {*} param0
  */
 exports.publishS3LayerArchive = async ({
-	region, 
+	region,
 	accessKeyId,
 	secretAccessKey,
 	s3Bucket,
@@ -142,7 +142,6 @@ exports.refreshLambdaLayerVersion = async ({
 			FunctionName: functionName,
 			Layers: [layerARN]
 		})));
-	
 	const response = await Promise.all(commands);
 	return response;
 }
@@ -155,7 +154,7 @@ exports.listLambdaFunctionsWithLayer = async ({
 	accessKeyId,
 	secretAccessKey,
 	layerARN
-																							}) => {
+}) => {
 	try {
 		const client = lambdaClient({ region, accessKeyId, secretAccessKey });
 		
