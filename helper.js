@@ -170,7 +170,7 @@ exports.listLambdaFunctionsWithLayer = async ({
 		} while (nextMarker);
 		
 		const layerARNWithoutVersion = layerARN.split(':').slice(0, -1).join(':')
-		const matchinFunctions = allFunctions.filter((func) => func.Layers && func.Layers.some((layer) => layer.Arn === layerARNWithoutVersion))
+		const matchinFunctions = allFunctions.filter((func) => func.Layers && func.Layers.some((layer) => layer.Arn.includes(layerARNWithoutVersion)))
 		const functionNames = matchinFunctions.map((func) => func.FunctionName);
 		return functionNames;
 	} catch (error) {
