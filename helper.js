@@ -32,15 +32,15 @@ exports.getArchiveSize = archive => statSync(archive).size
  * @param {*} param0
  */
 exports.publishLambdaLayer = async ({
-																			region,
-																			accessKeyId,
-																			secretAccessKey,
-																			layerName,
-																			archive,
-																			architectures,
-																			runtimes,
-																			s3Bucket = null
-																		}) => {
+	region,
+	accessKeyId,
+	secretAccessKey,
+	layerName,
+	archive,
+	architectures,
+	runtimes,
+	s3Bucket = null
+}) => {
 	/**
 	 * Initiate the lambda client
 	 */
@@ -80,13 +80,13 @@ exports.publishLambdaLayer = async ({
  * @param {*} param0
  */
 exports.publishS3LayerArchive = async ({
-																				 region,
-																				 accessKeyId,
-																				 secretAccessKey,
-																				 s3Bucket,
-																				 layerName,
-																				 archive
-																			 }) => {
+	region, 
+	accessKeyId,
+	secretAccessKey,
+	s3Bucket,
+	layerName,
+	archive
+}) => {
 	const client = s3Client({ region, accessKeyId, secretAccessKey });
 	const command = new PutObjectCommand({
 		Bucket: s3Bucket,
@@ -106,12 +106,12 @@ exports.publishS3LayerArchive = async ({
  * @param {*} param0
  */
 exports.deleteTemporaryArchiveFromS3 = async ({
-																								region,
-																								accessKeyId,
-																								secretAccessKey,
-																								s3Bucket,
-																								s3Key
-																							}) => {
+	region,
+	accessKeyId,
+	secretAccessKey,
+	s3Bucket,
+	s3Key
+}) => {
 	const client = s3Client({ region, accessKeyId, secretAccessKey });
 	const command = new DeleteObjectCommand({
 		Bucket: s3Bucket,
@@ -129,12 +129,12 @@ exports.deleteTemporaryArchiveFromS3 = async ({
  * Refresh lambda function to use the latest version of layer
  */
 exports.refreshLambdaLayerVersion = async ({
-																						 region,
-																						 accessKeyId,
-																						 secretAccessKey,
-																						 functionNames,
-																						 layerARN,
-																					 }) => {
+	region,
+	accessKeyId,
+	secretAccessKey,
+	functionNames,
+	layerARN,
+}) => {
 	const client = lambdaClient({ region, accessKeyId, secretAccessKey });
 	const commands = []
 	for (const functionName of functionNames)
@@ -151,10 +151,10 @@ exports.refreshLambdaLayerVersion = async ({
  * List all the lambda functions that use the specified layer
  */
 exports.listLambdaFunctionsWithLayer = async ({
-																								region,
-																								accessKeyId,
-																								secretAccessKey,
-																								layerARN
+	region,
+	accessKeyId,
+	secretAccessKey,
+	layerARN
 																							}) => {
 	try {
 		const client = lambdaClient({ region, accessKeyId, secretAccessKey });
