@@ -169,7 +169,8 @@ exports.listLambdaFunctionsWithLayer = async ({
 			nextMarker = nextPageMarker;
 		} while (nextMarker);
 		
-		const matchinFunctions = allFunctions.filter((func) => func.Layers && func.Layers.some((layer) => layer.Arn === layerARN))
+		const layerARNWithoutVersion = layerARN.split(':').slice(0, -1).join(':')
+		const matchinFunctions = allFunctions.filter((func) => func.Layers && func.Layers.some((layer) => layer.Arn === layerARNWithoutVersion))
 		const functionNames = matchinFunctions.map((func) => func.FunctionName);
 		return functionNames;
 	} catch (error) {

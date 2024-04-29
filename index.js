@@ -83,6 +83,7 @@ const {
 				...creds,
 				layerARN: layerResponse.LayerVersionArn,
 			})
+			console.log('The following functions will be updated :', foundFunctionNames)
 			// trigger functions update
 			await refreshLambdaLayerVersion({
 				...creds,
