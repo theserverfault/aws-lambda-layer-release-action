@@ -1,5 +1,5 @@
 const { readFileSync, statSync } = require('fs');
-const { LambdaClient, PublishLayerVersionCommand, UpdateFunctionConfigurationCommand } = require('@aws-sdk/client-lambda');
+const { LambdaClient, PublishLayerVersionCommand, UpdateFunctionConfigurationCommand, ListFunctionsCommand } = require('@aws-sdk/client-lambda');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 
 const non_error_response_codes = [200, 201, 204];
@@ -142,7 +142,38 @@ exports.refreshLambdaLayerVersion = async ({
 			FunctionName: functionName,
 			Layers: [layerARN]
 		})));
-
 	const response = await Promise.all(commands);
 	return response;
+}
+
+/**
+ * List all the lambda functions that use the specified layer
+ */
+exports.listLambdaFunctionsWithLayer = async ({
+	region,
+	accessKeyId,
+	secretAccessKey,
+	layerARN
+}) => {
+	try {
+		const client = lambdaClient({ region, accessKeyId, secretAccessKey });
+		
+		const allFunctions = [];
+		let nextMarker = null;
+		do {
+			const listFunctionsCommand = new ListFunctionsCommand({ Marker: nextMarker });
+			const { Functions: functions, NextMarker: nextPageMarker } = await client.send(listFunctionsCommand);
+			
+			allFunctions.push(...functions);
+			nextMarker = nextPageMarker;
+		} while (nextMarker);
+		
+		const layerARNWithoutVersion = layerARN.split(':').slice(0, -1).join(':')
+		const matchinFunctions = allFunctions.filter((func) => func.Layers && func.Layers.some((layer) => layer.Arn.includes(layerARNWithoutVersion)))
+		const functionNames = matchinFunctions.map((func) => func.FunctionName);
+		return functionNames;
+	} catch (error) {
+		console.error("Error:", error);
+		return [];
+	}
 }

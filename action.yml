@@ -32,6 +32,9 @@ inputs:
     description: "Optional Lambda function name(s) to update the layer to latest. String[]"
     required: false
     default: '[]'
+  auto_update:
+    description: "Optional Automatically update all Lambda functions using the layer to the latest layer version. Boolean"
+    required: false
 runs:
   using: 'node16'
   main: 'index.js'
